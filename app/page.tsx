@@ -116,7 +116,7 @@ export default function KioskMenuPage() {
           width: 720,
           height: 1280,
           flex: "none",
-          transform: "scale(min(calc(100vw / 720), calc(100dvh / 1280)))",
+          transform: "scale(min(calc(100vw / 720px), calc(100dvh / 1280px)))",
           display: "flex",
           flexDirection: "column",
           background: "#FFFFFF",
