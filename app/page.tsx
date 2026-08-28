@@ -97,19 +97,32 @@ export default function KioskMenuPage() {
   const count = ITEMS.reduce((sum, it) => sum + it.qty, 0);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    // Fixed 720x1280 kiosk canvas, scaled (not stretched) to fill whatever
+    // tablet screen it's mounted on — same fixed-resolution-kiosk approach
+    // real self-order terminals use, so the design stays pixel-identical.
+    <div
+      style={{
+        width: "100vw",
+        height: "100dvh",
+        overflow: "hidden",
+        background: "#EDF1F1",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <div
         style={{
           width: 720,
           height: 1280,
+          flex: "none",
+          transform: "scale(min(calc(100vw / 720), calc(100dvh / 1280)))",
           display: "flex",
           flexDirection: "column",
           background: "#FFFFFF",
           overflow: "hidden",
           color: INK,
           position: "relative",
-          borderRadius: 24,
-          boxShadow: "0 20px 60px rgba(20, 48, 47, 0.15)",
         }}
       >
         <header

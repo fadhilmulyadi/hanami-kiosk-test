@@ -1,15 +1,19 @@
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  min-height: 100%;
   margin: 0;
   background: #edf1f1;
   font-family: var(--font-plus-jakarta-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* kiosk touchscreen, not a webpage — no accidental text selection or callouts */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 * {
