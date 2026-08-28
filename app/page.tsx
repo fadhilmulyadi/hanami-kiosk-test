@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Beef,
@@ -90,41 +93,43 @@ function cardShape(W: number, selected: boolean) {
 }
 
 const COLUMNS = 3;
-const CARD_W = r2((536 - (COLUMNS - 1) * 18) / COLUMNS);
+const GAP = 18;
+// Server-rendered fallback matching the original 720px-wide design; the real
+// tablet width is measured on mount so the card shape fills edge to edge.
+const FALLBACK_CARD_W = r2((536 - (COLUMNS - 1) * GAP) / COLUMNS);
 
 export default function KioskMenuPage() {
   const total = ITEMS.reduce((sum, it) => sum + it.qty * it.price, 0);
   const count = ITEMS.reduce((sum, it) => sum + it.qty, 0);
 
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [cardW, setCardW] = useState(FALLBACK_CARD_W);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCardW(r2((entry.contentRect.width - (COLUMNS - 1) * GAP) / COLUMNS));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    // Fixed 720x1280 kiosk canvas, scaled (not stretched) to fill whatever
-    // tablet screen it's mounted on — same fixed-resolution-kiosk approach
-    // real self-order terminals use, so the design stays pixel-identical.
+    // Fills the tablet screen edge to edge on whatever aspect ratio it's
+    // mounted on, instead of scaling a fixed-size canvas and letterboxing.
     <div
       style={{
         width: "100vw",
         height: "100dvh",
-        overflow: "hidden",
-        background: "#EDF1F1",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        flexDirection: "column",
+        background: "#FFFFFF",
+        overflow: "hidden",
+        color: INK,
+        position: "relative",
       }}
     >
-      <div
-        style={{
-          width: 720,
-          height: 1280,
-          flex: "none",
-          transform: "scale(min(calc(100vw / 720px), calc(100dvh / 1280px)))",
-          display: "flex",
-          flexDirection: "column",
-          background: "#FFFFFF",
-          overflow: "hidden",
-          color: INK,
-          position: "relative",
-        }}
-      >
         <header
           style={{
             height: 104,
@@ -224,13 +229,13 @@ export default function KioskMenuPage() {
           </nav>
 
           <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: "26px 28px 44px", display: "flex", flexDirection: "column", gap: 22, background: "#FFFFFF" }}>
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`, columnGap: 18, rowGap: 34 }}>
+            <div ref={gridRef} style={{ display: "grid", gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`, columnGap: GAP, rowGap: 34 }}>
               {ITEMS.map((item) => {
                 const picked = item.qty > 0;
                 return (
                   <div key={item.id} style={{ position: "relative", height: CARD_H }}>
-                    <svg viewBox={`0 0 ${CARD_W} ${CARD_H}`} preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}>
-                      <path d={cardShape(CARD_W, picked)} fill="#F9FBFC" stroke={picked ? TEAL : "#E7EEEF"} strokeWidth={picked ? 2 : 1} />
+                    <svg viewBox={`0 0 ${cardW} ${CARD_H}`} preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}>
+                      <path d={cardShape(cardW, picked)} fill="#F9FBFC" stroke={picked ? TEAL : "#E7EEEF"} strokeWidth={picked ? 2 : 1} />
                     </svg>
                     <div style={{ position: "absolute", inset: 0, padding: 12, boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
                       <div style={{ flex: 1, minHeight: 0, borderRadius: 14, overflow: "hidden", background: "linear-gradient(135deg, #F3F7F6, #E4F0EF)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -357,6 +362,5 @@ export default function KioskMenuPage() {
           </div>
         </footer>
       </div>
-    </div>
   );
 }
